@@ -1,0 +1,11 @@
+<ivysettings>
+    <settings defaultResolver="chained"/>
+    <resolvers>
+        <chain name="chained">
+            <ibiblio name="Maven2" root="http://repo1.maven.org/maven2/" m2compatible="true"/>
+            <ibiblio name="undercover-only" root="http://undercover.googlecode.com/svn/maven/repository/" m2compatible="true"/>
+            <ibiblio name="java.net2" root="http://download.java.net/maven/2/" m2compatible="true"/>
+            <ibiblio name="Scala-Tools Maven2 Repository" root="http://scala-tools.org/repo-releases" m2compatible="true"/>
+        </chain>
+    </resolvers>
+</ivysettings>

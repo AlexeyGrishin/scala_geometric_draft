@@ -1,0 +1,15 @@
+<ivy-module version="2.0">
+    <info module="Gamr" organisation="com.actimind"/>
+    <dependencies>
+        <dependency rev="2.9.1" name="scala-compiler" org="org.scala-lang"/>
+        <dependency rev="2.9.1" name="scala-library" org="org.scala-lang"/>
+        <dependency rev="2.9.1" name="scala-swing" org="org.scala-lang"/>
+        <!--dependency org="org.scalatest" name="scalatest_2.9.1" rev="1.6.1"/-->
+        <dependency org="org.mockito" name="mockito-all" rev="1.9.0"/>
+        <dependency org="org.eclipse.jetty" name="jetty-server" rev="8.0.4.v20111024"/>
+        <dependency org="org.eclipse.jetty" name="jetty-websocket" rev="8.0.4.v20111024"/>
+        <dependency org="asm" name="asm" rev="3.2"/>
+        <dependency org="commons-lang" name="commons-lang" rev="2.4"/>
+        <dependency org="undercover" name="undercover" rev="0.8.3"/>
+    </dependencies>
+</ivy-module>

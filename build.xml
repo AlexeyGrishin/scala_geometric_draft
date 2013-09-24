@@ -1,0 +1,127 @@
+<project name="Gamr" xmlns:ivy="antlib:org.apache.ivy.ant">
+
+    <property name="sources" value="${basedir}/src"/>
+    <property name="libs" value="${basedir}/libs"/>
+    <property name="tests" value="${basedir}/tests"/>
+    <property name="out" value="${basedir}/out/production"/>
+    <property name="tests.out" value="${basedir}/out/test"/>
+
+    <property name="ivy.jar.dir" value="${basedir}/../../Libs/ivy"/>
+    <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar"/>
+    <property name="ivy.install.version" value="2.0.0-beta1"/>
+
+    <path id="lib.path.id">
+        <fileset dir="${libs}"/>
+    </path>
+
+    <target name="download-ivy" unless="skip.download">
+        <mkdir dir="${ivy.jar.dir}"/>
+        <!-- download Ivy from web site so that it can be used even without any special installation -->
+        <echo message="installing ivy..."/>
+        <get src="http://repo1.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar" dest="${ivy.jar.file}" usetimestamp="true"/>
+    </target>
+
+    <target name="install-ivy" depends="download-ivy">
+        <path id="ivy.lib.path">
+            <fileset dir="${ivy.jar.dir}" includes="*.jar"/>
+        </path>
+        <taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpathref="ivy.lib.path"/>
+    </target>
+
+    <target name="get-libs" depends="install-ivy">
+        <ivy:retrieve pattern="${libs}/[artifact].[ext]"/>
+    </target>
+
+    <target name="init" depends="get-libs">
+        <taskdef resource="scala/tools/ant/antlib.xml">
+            <classpath>
+                <pathelement location="${libs}/scala-compiler.jar" />
+                <pathelement location="${libs}/scala-library.jar" />
+            </classpath>
+        </taskdef>
+        <taskdef resource="undercover-ant.properties">
+            <classpath refid="lib.path.id"/>
+
+        </taskdef>
+
+
+    </target>
+
+    <target name="compile" depends="init">
+        <delete dir="${out}"/>
+        <mkdir dir="${out}"/>
+        <scalac srcdir="${sources}" destdir="${out}">
+            <classpath refid="lib.path.id"/>
+        </scalac>
+    </target>
+
+    <target name="unit-tests.init">
+       <taskdef name="scalatest" classname="org.scalatest.tools.ScalaTestAntTask">
+         <classpath refid="lib.path.id"/>
+       </taskdef>
+    </target>
+
+    <target name="unit-tests.compile" depends="init">
+        <delete dir="${tests.out}" />
+        <mkdir dir="${tests.out}"/>
+        <scalac srcdir="${tests}" destdir="${tests.out}">
+            <classpath refid="lib.path.id"/>
+            <classpath path="${out}"/>
+        </scalac>
+    </target>
+
+    <target name="unit-tests.run" depends="unit-tests.init, unit-tests.compile">
+        <scalatest fork="yes" haltonfailure="no">
+            <runpath>
+                <pathelement location="${tests.out}/undercover/classes" />
+                <pathelement location="${tests.out}" />
+                <path refid="lib.path.id" />
+            </runpath>
+            <jvmarg value="-Xms512m"/>
+            <jvmarg value="-Xmx1024m"/>
+            <jvmarg value="-Dundercover.coveragedata.saveOnExit=true"/>
+            <jvmarg value="-Dundercover.coveragedata.file=${tests.out}/undercover/undercover.cd"/>
+            <!--sysproperty key="undercover.coveragedata.saveOnExit" value="true" />
+            <sysproperty key="undercover.coveragedata.file" value="${tests.out}/undercover/undercover.cd" /-->
+        </scalatest>
+    </target>
+
+    <target name="unit-tests" depends="compile, unit-tests.init, unit-tests.compile">
+
+        <undercover-instrument
+                destdir="${tests.out}/undercover"
+                metadatafile="${tests.out}/undercover/undercover.md">
+            <instrumentpath>
+                <pathelement location="${out}" />
+            </instrumentpath>
+        </undercover-instrument>
+
+        <mkdir dir="${tests.out}/undercover/test-report" />
+
+        <antcall target="unit-tests.run"/>
+
+        <undercover-report
+                metadatafile="${tests.out}/undercover/undercover.md"
+                coveragedatafile="${tests.out}/undercover/undercover.cd"
+                sourceencoding="UTF-8">
+            <sourcepath>
+                <pathelement location="${sources}" />
+            </sourcepath>
+
+            <html output="${tests.out}/site/undercover" />
+            <emmaxml output="${tests.out}/site/emma/coverage.xml" />
+            <coberturaxml output="${tests.out}/site/cobertura/coverage.xml" />
+        </undercover-report>
+
+        <echo message="${tests.out}/site/undercover/index.html"/>
+    </target>
+
+
+
+    <target name="build">
+
+    </target>
+
+    <target name="all" depends="compile, build"/>
+
+</project>
